@@ -8,8 +8,9 @@ import time
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 try:
-    os.chdir("/Volumes/Gearon's Data Emporium/")
-    logging.info("Changed directory to /Volumes/Gearon's Data Emporium/")
+    os.chdir("/N/u/jhgearon/Quartz/aoe2_stats/data")
+    data_basepath = os.getcwd() + "/inputs/inputs"
+    logging.info("Changed directory to /N/u/jhgearon/Quartz/aoe2_stats/data")
 except Exception as e:
     logging.error(f"Failed to change directory: {e}")
 
@@ -57,7 +58,7 @@ def process_files_batch(files, table_name, batch_index):
     # Create a new connection for each batch
     conn = duckdb.connect('aoe2_data.duckdb')
     try:
-        df_list = [pd.read_csv(file).assign(file=os.path.basename(file)) for file in files]
+        df_list = [pd.read_csv(os.path.join(data_basepath, file)).assign(file=os.path.basename(file)) for file in files]
         df = pd.concat(df_list, ignore_index=True)
         
         if table_name == 'inputs':
