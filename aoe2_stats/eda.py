@@ -5,12 +5,12 @@ import logging
 import time
 
 # Setting up logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 try:
-    os.chdir("/N/u/jhgearon/Quartz/aoe2_stats/data")
+    os.chdir("/N/scratch/jhgearon/")
     data_basepath = os.getcwd() + "/inputs/inputs"
-    logging.info("Changed directory to /N/u/jhgearon/Quartz/aoe2_stats/data")
+    logging.info("Changed directory to /N/scratch/jhgearon/")
 except Exception as e:
     logging.error(f"Failed to change directory: {e}")
 
@@ -52,36 +52,20 @@ try:
 except Exception as e:
     logging.error(f"Failed to create index on games table: {e}")
 
-
-
-def process_files_batch(files, table_name, batch_index):
-    # Create a new connection for each batch
-    conn = duckdb.connect('aoe2_data.duckdb')
+def process_files_batch(files, table_name, batch_index, conn):
     try:
-        df_list = [pd.read_csv(os.path.join(data_basepath, file)).assign(file=os.path.basename(file)) for file in files]
-        df = pd.concat(df_list, ignore_index=True)
-        
-        if table_name == 'inputs':
-            df['match_id'] = df['file'].apply(lambda x: int(x.split('_')[0]))
-            df.drop(columns=['file'], inplace=True)  # Remove the 'file' column after extracting match_id
-        
-        # Drop the first column if it's not needed
-        df = df.iloc[:, 1:]  # This drops the first column of the DataFrame
-
-        # Use a unique temporary table name
-        temp_table_name = f"temp_{table_name}_{batch_index}_{int(time.time())}"
-        conn.register('temp_df', df)
-        conn.execute(f"CREATE OR REPLACE TABLE {temp_table_name} AS SELECT * FROM temp_df")
-        conn.execute(f"INSERT INTO {table_name} SELECT * FROM {temp_table_name}")
-        conn.execute(f"DROP TABLE {temp_table_name}")
-        logging.info(f"Batch {batch_index} of files inserted into {table_name} table.")
+        for file in files:
+            file_path = os.path.join(data_basepath, file)
+            if table_name == 'inputs':
+                conn.execute(f"COPY {table_name} FROM '{file_path}' (FORMAT 'csv', HEADER, DELIMITER ',', NULL 'NULL')")
+        logging.debug(f"Batch {batch_index} of files inserted into {table_name} table.")
+        conn.execute("COMMIT;")
+        conn.execute("CHECKPOINT;")
     except Exception as e:
         logging.error(f"Failed to process batch {batch_index} for {table_name}: {e}")
-    finally:
-        conn.close()  # Close the connection
-input_files = glob.glob('/Volumes/Gearon\'s Data Emporium/inputs/inputs/*.csv')
-batch_size = 1000  # Adjust batch size based on memory capacity and performance
 
+input_files = glob.glob('inputs/inputs/*.csv')
+batch_size = 1000  # Increased batch size for better performance
 
 # Create tables with appropriate schema
 try:
@@ -91,29 +75,16 @@ try:
     logging.info("Table inputs created with appropriate schema.")
 except Exception as e:
     logging.error(f"Failed to create tables with schema: {e}")
+
 # Process files in batches
 try:
     with ThreadPoolExecutor() as executor:
-        futures = [executor.submit(process_files_batch, input_files[i:i+batch_size], 'inputs', i//batch_size) for i in range(0, len(input_files), batch_size)]
+        futures = [executor.submit(process_files_batch, input_files[i:i+batch_size], 'inputs', i//batch_size, conn) for i in range(0, len(input_files), batch_size)]
         for future in tqdm(as_completed(futures), total=len(futures), desc="Processing Batches"):
             future.result()
     logging.info("All files processed successfully.")
 except Exception as e:
     logging.error(f"Error during file processing: {e}")
-
-
-
-
-# Process files in batches
-try:
-    with ThreadPoolExecutor() as executor:
-        futures = [executor.submit(process_files_batch, input_files[i:i+batch_size], 'inputs', i//batch_size) for i in range(0, len(input_files), batch_size)]
-        for future in tqdm(as_completed(futures), total=len(futures), desc="Processing Batches"):
-            future.result()
-    logging.info("All files processed successfully.")
-except Exception as e:
-    logging.error(f"Error during file processing: {e}")
-
 
 # Indexing
 try:
