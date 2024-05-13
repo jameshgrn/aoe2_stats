@@ -56,8 +56,21 @@ def process_files_batch(files, table_name, batch_index, conn):
     try:
         for file in files:
             file_path = os.path.join(data_basepath, file)
+            # Extract match_id from the filename
+            match_id = file.split('_')[0]  # Assuming the filename format is "{match_id}_inputs.csv"
             if table_name == 'inputs':
-                conn.execute(f"COPY {table_name} FROM '{file_path}' (FORMAT 'csv', HEADER, DELIMITER ',', NULL 'None')")
+                # Assuming the first column is unnamed and the "position" column is not needed
+                # Modify the SQL command to exclude these columns and use the extracted match_id
+                conn.execute(f"""
+                    COPY {table_name} (
+                        ts_seconds, timestamp, type, param, payload, player, x_pos, y_pos
+                    ) FROM '{file_path}' (
+                        FORMAT 'csv', HEADER, DELIMITER ',', NULL 'None',
+                        SKIP 1  # Skip the first column
+                    )
+                """)
+                # Update the match_id directly after the COPY command
+                conn.execute(f"UPDATE {table_name} SET match_id = {match_id} WHERE match_id IS NULL;")
         logging.debug(f"Batch {batch_index} of files inserted into {table_name} table.")
         conn.execute("COMMIT;")
         conn.execute("CHECKPOINT;")
