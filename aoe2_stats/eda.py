@@ -66,7 +66,6 @@ def process_files_batch(files, table_name, batch_index, conn):
                         ts_seconds, timestamp, type, param, payload, player, x_pos, y_pos
                     ) FROM '{file_path}' (
                         FORMAT 'csv', HEADER, DELIMITER ',', NULL 'None',
-                        SKIP 1 
                     )
                 """)
                 # Update the match_id directly after the COPY command
