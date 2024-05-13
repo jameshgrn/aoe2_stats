@@ -57,7 +57,7 @@ def process_files_batch(files, table_name, batch_index, conn):
         for file in files:
             file_path = os.path.join(data_basepath, file)
             if table_name == 'inputs':
-                conn.execute(f"COPY {table_name} FROM '{file_path}' (FORMAT 'csv', HEADER, DELIMITER ',', NULL 'NULL')")
+                conn.execute(f"COPY {table_name} FROM '{file_path}' (FORMAT 'csv', HEADER, DELIMITER ',', NULL 'None')")
         logging.debug(f"Batch {batch_index} of files inserted into {table_name} table.")
         conn.execute("COMMIT;")
         conn.execute("CHECKPOINT;")
