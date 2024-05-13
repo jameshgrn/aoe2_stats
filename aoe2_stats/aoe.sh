@@ -9,7 +9,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=01-02:00:00
-#SBATCH --mem=2G
+#SBATCH --mem=20G
 #SBATCH -A r00268
 
 
