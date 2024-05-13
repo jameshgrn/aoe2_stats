@@ -59,13 +59,13 @@ def process_files_batch(files, table_name, batch_index, conn):
             # Extract match_id from the filename
             match_id = file.split('_')[0]  # Assuming the filename format is "{match_id}_inputs.csv"
             if table_name == 'inputs':
-            conn.execute(f"""
-                COPY {table_name} (
-                    ts_seconds, timestamp, type, param, payload, player, x_pos, y_pos
-                ) FROM '{file_path}' WITH (
-                    FORMAT 'csv', HEADER, DELIMITER ',', NULL 'None', QUOTE '"'
-                );
-            """)
+                conn.execute(f"""
+                    COPY {table_name} (
+                        ts_seconds, timestamp, type, param, payload, player, x_pos, y_pos
+                    ) FROM '{file_path}' WITH (
+                        FORMAT 'csv', HEADER, DELIMITER ',', NULL 'None', QUOTE '"'
+                    );
+                """)
                 # Update the match_id directly after the COPY command
                 conn.execute(f"UPDATE {table_name} SET match_id = {match_id} WHERE match_id IS NULL;")
         logging.debug(f"Batch {batch_index} of files inserted into {table_name} table.")
