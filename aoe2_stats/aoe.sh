@@ -17,6 +17,6 @@ cd aoe2_stats/aoe2_stats
 #Load any modules that your program needs
 module load python
 
-pip -u install duckdb pandas 
+pip -U install duckdb pandas 
 #Run your program
-python aoe2_stats/eda.py
+python eda.py
