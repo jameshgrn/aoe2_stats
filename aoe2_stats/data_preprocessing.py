@@ -9,7 +9,7 @@ def preprocess_csv(file_path):
         df = pd.read_csv(file_path, header=0)
         
         # Drop the first column and the 'position' column
-        df.drop(df.columns[[0, 6]], axis=1, inplace=True)  # Adjust the index 6 if the position of 'position' column changes
+        df.drop(df.columns[[0, 7]], axis=1, inplace=True)  # Adjust the index 6 if the position of 'position' column changes
         
         # Save the modified DataFrame back to the file
         df.to_csv(file_path, index=False)
