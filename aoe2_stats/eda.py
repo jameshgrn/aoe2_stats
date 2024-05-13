@@ -64,7 +64,7 @@ def process_files_batch(files, table_name, batch_index, conn):
     except Exception as e:
         logging.error(f"Failed to process batch {batch_index} for {table_name}: {e}")
 
-input_files = glob.glob('inputs/inputs/*.csv')
+input_files = glob.glob('/N/scratch/jhgearon/inputs/inputs/*.csv')
 batch_size = 1000  # Increased batch size for better performance
 
 # Create tables with appropriate schema
