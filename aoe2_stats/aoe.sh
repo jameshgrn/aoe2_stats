@@ -10,6 +10,8 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --time=01-02:00:00
 #SBATCH --mem=150G
+#SBATCH -A r00268
+
 
 cd aoe2_stats/aoe2_stats
 #Load any modules that your program needs
