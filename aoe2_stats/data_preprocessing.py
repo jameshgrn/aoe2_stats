@@ -5,8 +5,8 @@ import glob
 
 def preprocess_csv(file_path):
     try:
-        # Load the CSV file, assuming no header for the first row and skipping it
-        df = pd.read_csv(file_path, header=0)
+        # Load the CSV file
+        df = pd.read_csv(file_path)
         
         # Drop the first column and the 'position' column
         df.drop(df.columns[[0, 7]], axis=1, inplace=True)  # Adjust the index 6 if the position of 'position' column changes
